@@ -2,9 +2,19 @@ from fastapi import FastAPI
 from database import db
 from models import Car, CarPart, Repair
 from schemas import CarCreate, CarUpdate
+from fastapi.middleware.cors import CORSMiddleware
 
 # инициализаия на backend и database слой
 app = FastAPI()
+
+# добавяне на middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # свързване на база данни
 db.connect()
@@ -14,14 +24,9 @@ db.create_tables([Car, CarPart, Repair])
 
 # ===== CRUD АВТОМОБИЛИ =====
 
-# четене на всички автомобили
 @app.get("/cars")
 def get_cars():
-    cars = []
-    for car in Car.select():
-        cars.append(car)
-
-    return cars
+    return list(Car.select().dicts())
 
 
 # взимане на един автомобил
@@ -37,7 +42,7 @@ def create_car(car: CarCreate):
     return Car.create(**car.model_dump())
 
 # изтриване на автомобил
-@app.delete("/cars/{car_id}")
+@app.delete("/cars/delete/{car_id}")
 def delete_car(car_id: str):
     car = Car.get(Car.id == car_id)
     car.delete_instance()

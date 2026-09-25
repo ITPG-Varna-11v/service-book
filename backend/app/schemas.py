@@ -1,4 +1,4 @@
-from models import BaseModel
+from pydantic import BaseModel
 
 class CarCreate(BaseModel):
     vin: str
