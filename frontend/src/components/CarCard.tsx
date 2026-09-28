@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Edit, Trash, Wrench } from "lucide-react"
 import EditCarDialog from "./EditDialog"
+import ConfirmDeleteDialog from "./ConfirmDeleteDialog"
 
 export interface Car {
   id: string
@@ -22,24 +23,21 @@ const excluded = ["brand", "title", "model", "id"]
 
 const CarCard = ({ car, onDelete, onUpdate }: CarCardProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   const handleDeleteCar = async (carId: string) => {
-    try {
-      const response = await fetch(
-        `http://localhost:8000/cars/delete/${carId}`,
-        {
-          method: "DELETE",
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error("Failed to delete car")
+    const response = await fetch(
+      `http://localhost:8000/cars/delete/${carId}`,
+      {
+        method: "DELETE",
       }
+    )
 
-      onDelete(carId)
-    } catch (error) {
-      console.error(error)
+    if (!response.ok) {
+      throw new Error("Failed to delete car")
     }
+
+    onDelete(carId)
   }
 
   return (
@@ -58,7 +56,7 @@ const CarCard = ({ car, onDelete, onUpdate }: CarCardProps) => {
         <div className="flex flex-row gap-2">
           <button
             className="ml-auto rounded-full bg-red-500/10 p-2 text-red-500 hover:bg-red-500/20"
-            onClick={() => handleDeleteCar(car.id)}
+            onClick={() => setIsDeleteDialogOpen(true)}
           >
             <Trash className="h-4 w-4" />
           </button>
@@ -101,6 +99,13 @@ const CarCard = ({ car, onDelete, onUpdate }: CarCardProps) => {
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onUpdate={onUpdate}
+      />
+
+      <ConfirmDeleteDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onDelete={() => handleDeleteCar(car.id)}
+        itemName={car.title}
       />
     </div>
   )
